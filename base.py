@@ -31,6 +31,11 @@ def extract(model, dataloader):
 dataset_train_images = []
 dataset_train_labels = []
 
+if torch.cuda.is_available():
+    print(f'Cuda is enabled')
+else:
+    print(f'Cuda is not available')
+
 for i in range(1, 6):
     dataset_batch = unpickle(f"cifar-10/data_batch_{i}")
     dataset_train_images.extend(dataset_batch[b'data'])
@@ -53,28 +58,31 @@ dataset_loader = torch.utils.data.DataLoader(dataset_train, batch_size=64, shuff
 model = torch.nn.Sequential(
     # First convolutional layer
     torch.nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, stride=1, padding=1),
-    torch.nn.Sigmoid(),
+    torch.nn.ReLU(),
     torch.nn.MaxPool2d(kernel_size=2, stride=2),
     
     # Second convolutional layer
     torch.nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1),
-    torch.nn.Sigmoid(),
+    torch.nn.ReLU(),
     torch.nn.MaxPool2d(kernel_size=2, stride=2),
     
     # Flatten the output from the convolutional layers
     torch.nn.Flatten(),
     
     # Fully connected layer
-    torch.nn.Linear(32 * 8 * 8, 128),
-    torch.nn.ReLU(),  # Activation function for the fully connected layer
+    torch.nn.Linear(32 * 8 * 8, 64),
+    torch.nn.ReLU(),
+    
+    # Fully connected layer
+    torch.nn.Linear(64, 64),
+    torch.nn.Sigmoid(),
     
     # Output layer
-    torch.nn.Linear(128, 10)
+    torch.nn.Linear(64, 10)
 )
 
-# Reduce LR by 0.25 every 5 epochs
-optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
-scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.25)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.005)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 criterion = torch.nn.CrossEntropyLoss()
 
 # --------------------------------------------------------------------------------------------------------------------------- #
