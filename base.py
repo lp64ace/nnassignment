@@ -53,12 +53,12 @@ dataset_loader = torch.utils.data.DataLoader(dataset_train, batch_size=64, shuff
 model = torch.nn.Sequential(
     # First convolutional layer
     torch.nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, stride=1, padding=1),
-    torch.nn.ReLU(),
+    torch.nn.Sigmoid(),
     torch.nn.MaxPool2d(kernel_size=2, stride=2),
     
     # Second convolutional layer
     torch.nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1),
-    torch.nn.ReLU(),
+    torch.nn.Sigmoid(),
     torch.nn.MaxPool2d(kernel_size=2, stride=2),
     
     # Flatten the output from the convolutional layers
@@ -73,8 +73,8 @@ model = torch.nn.Sequential(
 )
 
 # Reduce LR by 0.25 every 5 epochs
-optimizer = torch.optim.Adam(model.parameters(), lr=0.005)
-scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.25)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.25)
 criterion = torch.nn.CrossEntropyLoss()
 
 # --------------------------------------------------------------------------------------------------------------------------- #
@@ -100,7 +100,7 @@ for epoch in range(epochs):
         running_loss += loss.item()
         if (index + 1) % 128 == 0:
             print(f'Epoch [{epoch+1}/{epochs}], Step [{index+1}/{len(dataset_loader)}], Loss: {loss.item():.4f}')
-    # scheduler.step()
+    scheduler.step()
     print(f'Epoch [{epoch+1}/{epochs}], Average Loss: {running_loss / len(dataset_loader):.4f}')
 
 # --------------------------------------------------------------------------------------------------------------------------- #
